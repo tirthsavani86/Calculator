@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title> Calculator </title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width" initial-scale="1.0">
+        <style>
+
+            :root 
+            {
+                --bg-color: linear-gradient(135deg, #2ed6d6 25%, #69e94a 75%);
+                --card: #F0FDF4; 
+                --text-color: #164E43;
+                --display: #0F766E;
+                --display-bg: #CCFBF1;
+                --shadow: rgba(22, 78, 67, 0.08);
+                --btn-bg: #FFFFFF;
+                --operator-bg: #DCFCE7;
+                --operator-text: #15803D;
+                --equal-bg: #14B8A6;
+            }
+
+            body.dark-theme 
+            {   
+                --bg-color: linear-gradient(135deg, #2e31d6 25%, #7421a5 75%);
+                --card: #121420;
+                --text-color: #000000;
+                --display: #93C5FD;
+                --display-bg: #1E2235;
+                --shadow: rgba(0, 0, 0, 0.4);
+                --btn-bg: #1A1D30;
+                --operator-bg: #281E45;
+                --operator-text: #C084FC;
+                --equal-bg: #6C63FF;
+            }
+
+            body
+            {
+                background: var(--bg-color);
+                transition: background 0.5s ease;
+            }
+
+            #card, #click, #display, .operands, .operators, #equal, #theme
+            {
+                transition:
+                background 0.5s ease,
+                background-color 0.5s ease,
+                color 0.5s ease,
+                box-shadow 0.5s ease,
+                border-color 0.5s ease;
+            }
+
+            .buttons
+            {
+                display: flex;
+                justify-content: center;
+                margin: auto;
+                padding: 5px;
+            }
+
+            #display
+            {
+                margin: 15px auto 0px;
+                padding: 20px 10px 0px;
+                border: none;
+                height: 25px;
+                color: var(--display);
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            #card
+            {
+                margin: 110px auto;
+                padding: 0px;
+                border: none;
+                max-width: 150px;
+                text-align: center;
+                background: var(--card);
+                border-radius: 10px;
+                height: 245px;
+                backdrop-filter: blur(15px);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            }
+
+            .row
+            {
+                margin: 5px;
+            }
+
+            .operands
+            {
+                color: var(--text-color);
+                box-shadow: var(--shadow);
+                border-radius: 25px;
+                border: none;
+                cursor: pointer;
+            }
+
+            .operators
+            {
+                background: var(--operator-bg);
+                color: var(--operator-text);
+                box-shadow: var(--shadow);
+                border: none;
+                border-radius: 25px;
+                cursor: pointer;
+            }
+
+            .column
+            {
+                width: 31px;
+                height: 22px;
+            }
+
+            #equal
+            {
+                color: var(--card);
+                background: var(--equal-bg);
+                border: none;
+                border-radius: 25px;
+                cursor: pointer;
+            }
+
+            #click
+            {
+                background: var(--btn-bg);
+                border-radius: 10px;
+                margin: 0px;
+            }
+
+            .theme
+            {
+                text-align: right;
+            }
+        </style>
+    </head>
+    <body>
+
+        <nav class="theme">
+            <button class="operators" id="theme"> Dark Mode </button>
+        </nav>
+
+        <div id="card">
+
+            <p id="display"></p>
+
+            <div id="click">
+                <div class="buttons">
+                <button class="row column operators" onclick="clearall()"> AC </button>
+                <button class="row column operators" onclick="back()"> C </button>
+                <button class="row column operators" onclick="show('%')"> % </button>
+                <button class="row column operators" onclick="show('/')"> / </button>
+                </div>
+
+                <div class="buttons">
+                <button class="row column operands" onclick="show(7)"> 7 </button>
+                <button class="row column operands" onclick="show(8)"> 8 </button>
+                <button class="row column operands" onclick="show(9)"> 9 </button>
+                <button class="row column operators" onclick="show('*')"> * </button>
+                </div>
+
+                <div class="buttons">
+                <button class="row column operands" onclick="show(4)"> 4 </button>
+                <button class="row column operands" onclick="show(5)"> 5 </button>
+                <button class="row column operands" onclick="show(6)"> 6 </button>
+                <button class="row column operators" onclick="show('-')"> - </button>
+                </div>
+
+                <div class="buttons">
+                <button class="row column operands" onclick="show(1)"> 1 </button>
+                <button class="row column operands" onclick="show(2)"> 2 </button>
+                <button class="row column operands" onclick="show(3)"> 3 </button>
+                <button class="row column operators" onclick="show('+')"> + </button>
+                </div>
+
+                <div class="buttons"> 
+                <button class="row column operands" onclick="show(0)"> 0 </button>
+                <button class="row column operands" onclick="show( '00' )"> 00 </button>
+                <button class="row column operators" onclick="show('.')"> . </button>
+                <button class="row column" id="equal" onclick="result()"> = </button>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/14.7.0/math.min.js"></script>
+
+        <script>
+
+            let disp = "";
+            const display = document.getElementById("display");
+            let validchar = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '+', '-', '*' ,'/', '%', '.'];
+
+            document.addEventListener("keydown", function(event)
+            {
+                if (validchar.includes(event.key))
+                {
+                    show(event.key);
+                }
+                else if (event.key === "Enter")
+                {
+                    result();
+                }
+                else if (event.key === "Backspace")
+                {
+                    back();
+                }
+                else if (event.key === "Escape")
+                {
+                    clearall();
+                }
+                else
+                {
+                    return;
+                }
+            });
+
+            function show( x )
+            {
+                disp += x;
+                display.textContent = disp;
+            }
+
+            function result()
+            {
+                try 
+                {
+                    disp = math.evaluate(disp).toString();
+                    display.textContent = disp; 
+                }
+                catch 
+                {
+                    alert("Error!");
+                    disp = "";
+                }
+
+                display.textContent = math.evaluate(disp);
+                disp = math.evaluate(disp).toString();
+                display.textContent = disp;
+            }
+
+            function clearall()
+            {
+                disp = '';
+                display.textContent = disp;
+            }
+
+            function back()
+            {
+                disp = disp.slice(0, -1);
+                display.textContent = disp;
+            }
+
+            const theme = document.getElementById("theme");
+
+            theme.addEventListener("click", ()=>
+            {
+                document.body.classList.toggle("dark-theme");
+                if (document.body.classList.contains("dark-theme"))
+                {
+                    theme.textContent = "Light Mode"
+                    localStorage.setItem("theme", "dark")
+                }
+                else
+                {
+                    theme.textContent = "Dark Mode"
+                    localStorage.setItem("theme", "light")
+                }
+            });
+
+            function loadtheme()
+            {
+                let default_theme = localStorage.getItem("theme");
+
+                if (default_theme === "dark")
+                {
+                    document.body.classList.add("dark-theme")
+                    theme.textContent = "Light Mode";
+                }
+                else
+                {
+                    document.body.classList.remove("dark-theme")
+                    theme.textContent = "Dark Mode";
+                }
+            }
+
+            loadtheme();
+        </script>
+    </body>
+</html>
